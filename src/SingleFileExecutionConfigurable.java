@@ -12,12 +12,12 @@ import javax.swing.*;
  */
 class SingleFileExecutionConfigurable implements SearchableConfigurable {
 
-    private SingleFileExecutionConfigurableGUI mGUI;
+    private SingleFileExecutionConfigurableGUI gui;
 
-    private final Project mProject;
+    private final Project project;
 
     public SingleFileExecutionConfigurable(@NotNull Project project) {
-        mProject = project;
+        this.project = project;
     }
 
     @Nls
@@ -47,28 +47,28 @@ class SingleFileExecutionConfigurable implements SearchableConfigurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        mGUI = new SingleFileExecutionConfigurableGUI();
-        mGUI.createUI(mProject);
-        return mGUI.getRootPanel();
+        gui = new SingleFileExecutionConfigurableGUI();
+        gui.createUI(project);
+        return gui.getRootPanel();
     }
 
     @Override
     public boolean isModified() {
-        return mGUI.isModified();
+        return gui.isModified();
     }
 
     @Override
     public void apply() {
-        mGUI.apply();
+        gui.apply();
     }
 
     @Override
     public void reset() {
-        mGUI.reset();
+        gui.reset();
     }
 
     @Override
     public void disposeUIResources() {
-        mGUI = null;
+        gui = null;
     }
 }

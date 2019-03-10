@@ -14,15 +14,11 @@ class SingleFileExecutionConfigurableGUI {
     private JPanel rootPanel;
     private JTextField exeNameTextField;
     private JCheckBox notShowDialogCheckBox;
-    private JPanel showConfimationDialogSetting;
+    private JPanel showConfirmationDialogSetting;
     private JPanel outputPathSetting;
     private JPanel exeNameSetting;
     private JTextField runtimeOutputDirectoryTextField;
     private SingleFileExecutionConfig mConfig;
-
-    SingleFileExecutionConfigurableGUI() {
-        // $$$setupUI$$$ will be executed here (inserted automatically)
-    }
 
     void createUI(Project project) {
         mConfig = SingleFileExecutionConfig.getInstance(project);
@@ -36,7 +32,7 @@ class SingleFileExecutionConfigurableGUI {
     }
 
     boolean isModified() {
-        boolean modified = false;
+        boolean modified;
         modified = !exeNameTextField.getText().equals(mConfig.getExecutableName());
         modified |= !runtimeOutputDirectoryTextField.getText().equals(mConfig.getRuntimeOutputDirectory());
         modified |= !notShowDialogCheckBox.isSelected() == mConfig.notShowOverwriteConfirmDialog;
@@ -75,14 +71,14 @@ class SingleFileExecutionConfigurableGUI {
         rootPanel.setRequestFocusEnabled(true);
         final Spacer spacer1 = new Spacer();
         rootPanel.add(spacer1, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        showConfimationDialogSetting = new JPanel();
-        showConfimationDialogSetting.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        rootPanel.add(showConfimationDialogSetting, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        showConfirmationDialogSetting = new JPanel();
+        showConfirmationDialogSetting.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        rootPanel.add(showConfirmationDialogSetting, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         notShowDialogCheckBox = new JCheckBox();
         notShowDialogCheckBox.setText("Do not show confirmation dialog when same executable name already exists.");
-        showConfimationDialogSetting.add(notShowDialogCheckBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        showConfirmationDialogSetting.add(notShowDialogCheckBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
-        showConfimationDialogSetting.add(spacer2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        showConfirmationDialogSetting.add(spacer2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         outputPathSetting = new JPanel();
         outputPathSetting.setLayout(new GridLayoutManager(4, 2, new Insets(0, 0, 0, 0), -1, -1));
         rootPanel.add(outputPathSetting, new GridConstraints(1, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -92,10 +88,10 @@ class SingleFileExecutionConfigurableGUI {
         runtimeOutputDirectoryTextField = new JTextField();
         outputPathSetting.add(runtimeOutputDirectoryTextField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label2 = new JLabel();
-        label2.setText("%PROJECTDIR% will be replaced with project root directory.");
+        label2.setText("%PROJECT_DIR% will be replaced with project root directory.");
         outputPathSetting.add(label2, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label3 = new JLabel();
-        label3.setText("%FILEDIR% will be replaced with source file's parent directory.");
+        label3.setText("%FILE_DIR% will be replaced with source file's parent directory.");
         outputPathSetting.add(label3, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label4 = new JLabel();
         label4.setText("Default path will be used when not specified.");
@@ -119,9 +115,6 @@ class SingleFileExecutionConfigurableGUI {
         label5.setLabelFor(exeNameTextField);
     }
 
-    /**
-     * @noinspection ALL
-     */
     public JComponent $$$getRootComponent$$$() {
         return rootPanel;
     }

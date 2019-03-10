@@ -20,62 +20,45 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- *
- */
 class SingleFileExecutionAction extends AnAction {
-
     private static final int EXE_NOT_EXIST = 0;
     private static final int EXE_EXIST_SAME_SOURCE = 1;
     private static final int EXE_EXIST_DIFFERENT_SOURCE = 2;
-    private VirtualFile sourceFile;
+    private VirtualFile targetedSourceFile;
     private SingleFileExecutionConfig config;
     private Project project;
     private static final String CMAKE_FILE = "/CMakeLists.txt";
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-
-        /* Get all the required data from data keys */
-        //final Editor editor = e.getRequiredData(CommonDataKeys.EDITOR);
-        project = e.getRequiredData(CommonDataKeys.PROJECT);
+    public void actionPerformed(@NotNull AnActionEvent event) {
+        project = event.getRequiredData(CommonDataKeys.PROJECT);
         config = SingleFileExecutionConfig.getInstance(project);
 
-        // get source file (* currently selected file in editor)
-        sourceFile = e.getData(PlatformDataKeys.VIRTUAL_FILE);
+        targetedSourceFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
 
 
-        String cmakelistFilePath = Objects.requireNonNull(sourceFile).getParent().getPath() + CMAKE_FILE;
-        File cmakeOnCurrentFolder = new File(cmakelistFilePath);
+        String nearestCmake = Objects.requireNonNull(targetedSourceFile).getParent().getPath() + CMAKE_FILE;
+        File cmakeOnCurrentFolder = new File(nearestCmake);
         if(!cmakeOnCurrentFolder.exists()){
-            cmakelistFilePath = project.getBasePath() + CMAKE_FILE;
+            nearestCmake = project.getBasePath() + CMAKE_FILE;
         }
 
-        //Access document, caret, and selection
-        //final Document document = editor.getDocument();
-        //final SelectionModel selectionModel = editor.getSelectionModel();
-        //final int start = selectionModel.getSelectionStart();
-        //final int end = selectionModel.getSelectionEnd();
-
-        File file = new File(cmakelistFilePath);
-        VirtualFile cmakelistFile = LocalFileSystem.getInstance().findFileByIoFile(file);
-        if (cmakelistFile == null) {
-            /* CMakeLists.txt not exist */
+        File file = new File(nearestCmake);
+        VirtualFile cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        if (cmakeFile == null) {
             Notifications.Bus.notify (
-                    new Notification("singlefileexecutionaction", "Single File Execution Plugin", "Fail to access " + cmakelistFilePath, NotificationType.ERROR)
+                    new Notification("singlefileexecutionaction", "Single File Execution Plugin", "Fail to access " + nearestCmake, NotificationType.ERROR)
             );
             return;
         }
-        Document cmakelistDocument = FileDocumentManager.getInstance().getDocument(cmakelistFile);
+        Document cmakelistDocument = FileDocumentManager.getInstance().getDocument(cmakeFile);
 
-        //vFile.getCanonicalPath();   // source file path (absolute path)
-        //vFile.getPath();            // source file path (absolute path)
-        String fileName = sourceFile != null ? sourceFile.getName() : null;  // source file name (but not include path)
+        String fileName = targetedSourceFile != null ? targetedSourceFile.getName() : null;  // source file name (but not include path)
 
         String exeName = buildExeName(config.getExecutableName());
-        String relativeSourcePath = new File(Objects.requireNonNull(sourceFile.getParent().getPath())).toURI().relativize(new File(sourceFile.getPath()).toURI()).getPath();
+        String relativeSourcePath = new File(Objects.requireNonNull(targetedSourceFile.getParent().getPath())).toURI().relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
         if(!cmakeOnCurrentFolder.exists()){
-            relativeSourcePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(new File(sourceFile.getPath()).toURI()).getPath();
+            relativeSourcePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
         }
 
         /* parse cmakelistDocument to check existence of exe_name */
@@ -131,9 +114,9 @@ class SingleFileExecutionAction extends AnAction {
                     Notifications.Bus.notify(
                             new Notification("singlefileexecutionaction", "Single File Execution Plugin", "add_executable overwritten", NotificationType.INFORMATION)
                     );
-                }  // cancel
-                // do nothing so far
-
+                }
+                break;
+            default:
                 break;
         }
 
@@ -215,19 +198,19 @@ class SingleFileExecutionAction extends AnAction {
     private String buildExeName(String exeName) {
         String newExeName;
         /* %FILENAME% replacement */
-        newExeName = exeName.replace(SingleFileExecutionConfig.EXECUTABLE_NAME_FILENAME, sourceFile.getNameWithoutExtension());
+        newExeName = exeName.replace(SingleFileExecutionConfig.EXECUTABLE_NAME_FILENAME, targetedSourceFile.getNameWithoutExtension());
         return newExeName;
     }
 
     private String buildRuntimeOutputDirectory() {
         String newRuntimeOutputDirectory = config.getRuntimeOutputDirectory();
         /* source file's parent directory absolute path */
-        //String sourceDir = new File(sourceFile.getPath()).getAbsoluteFile().getParentFile().getName();
+        //String sourceDir = new File(targetedSourceFile.getPath()).getAbsoluteFile().getParentFile().getName();
         String sourceDirRelativePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(
-                new File(sourceFile.getPath()).getParentFile().toURI()).getPath();
+                new File(targetedSourceFile.getPath()).getParentFile().toURI()).getPath();
 
-        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(SingleFileExecutionConfig.PROJECTDIR, "${PROJECT_SOURCE_DIR}");
-        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(SingleFileExecutionConfig.FILEDIR, "${CMAKE_CURRENT_SOURCE_DIR}/" + sourceDirRelativePath);
+        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(SingleFileExecutionConfig.PROJECT_DIR, "${PROJECT_SOURCE_DIR}");
+        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(SingleFileExecutionConfig.FILE_DIR, "${CMAKE_CURRENT_SOURCE_DIR}/" + sourceDirRelativePath);
         return newRuntimeOutputDirectory;
     }
 
