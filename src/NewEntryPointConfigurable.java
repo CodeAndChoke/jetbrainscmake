@@ -10,13 +10,13 @@ import javax.swing.*;
  * This ProjectConfigurable class appears on Settings dialog,
  * to let user to configure this plugin's behavior.
  */
-class SingleFileExecutionConfigurable implements SearchableConfigurable {
+class NewEntryPointConfigurable implements SearchableConfigurable {
 
-    private SingleFileExecutionConfigurableGUI gui;
+    private NewEntryPointConfigurableGUI gui;
 
     private final Project project;
 
-    public SingleFileExecutionConfigurable(@NotNull Project project) {
+    public NewEntryPointConfigurable(@NotNull Project project) {
         this.project = project;
     }
 
@@ -29,13 +29,13 @@ class SingleFileExecutionConfigurable implements SearchableConfigurable {
     @Nullable
     @Override
     public String getHelpTopic() {
-        return "preference.SingleFileExecutionConfigurable";
+        return "preference.NewEntryPointConfigurable";
     }
 
     @NotNull
     @Override
     public String getId() {
-        return "preference.SingleFileExecutionConfigurable";
+        return "preference.NewEntryPointConfigurable";
     }
 
     @Nullable
@@ -47,7 +47,7 @@ class SingleFileExecutionConfigurable implements SearchableConfigurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        gui = new SingleFileExecutionConfigurableGUI();
+        gui = new NewEntryPointConfigurableGUI();
         gui.createUI(project);
         return gui.getRootPanel();
     }

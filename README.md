@@ -1,11 +1,18 @@
-# New Single Entry Point
+# New Entry Point
 [CLion](https://www.jetbrains.com/clion/) plugin to execute single file .c/.cpp file quickly.
 
 ## Description
-CLion is a C/C++ IDE on [IntelliJ IDEA](https://www.jetbrains.com/idea/) platform provided by [JetBrains](https://www.jetbrains.com/).
+If you are from Java world, you might be used to simply creating a new single <code>public static void main</code>
+in order to create a new entry point for testing purpose.
 
-CLion is working on CMake platform, so when you want to run a single file with main() function you need to configure CMakeLists.txt file everytime.
-This plugin helps you to add a configuration to quickly run a single .c/.cpp file.
+With CMake things are more complicating since all files needed to be linked together and duplicated method names
+will not be tolerated, therefore<code>CMakeLists.txt</code> needs to be configured
+to declare <code>add_executable(Example example.c)</code> to run a new entry point.
+It is troublesome when you want to run many of the files independently within the same project.<br>
+
+This plugin supports to insert <code>add_executable()</code> statement into <code>CMakeLists.txt</code>.
+It will try to find the nearest <code>CMakeLists.txt</code> on the same folder level with the targeted
+source code. If it doesn't exist, the root <code>CMakeLists.txt</code> will be token.
 
 ## Usage
 Select a C/C++ source and hot key Shift + Alt + E will do the reset for you.

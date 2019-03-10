@@ -20,19 +20,19 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class SingleFileExecutionAction extends AnAction {
+class NewEntryPointAction extends AnAction {
     private static final int EXE_NOT_EXIST = 0;
     private static final int EXE_EXIST_SAME_SOURCE = 1;
     private static final int EXE_EXIST_DIFFERENT_SOURCE = 2;
     private VirtualFile targetedSourceFile;
-    private SingleFileExecutionConfig config;
+    private NewEntryPointConfig config;
     private Project project;
     private static final String CMAKE_FILE = "/CMakeLists.txt";
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         project = event.getRequiredData(CommonDataKeys.PROJECT);
-        config = SingleFileExecutionConfig.getInstance(project);
+        config = NewEntryPointConfig.getInstance(project);
 
         targetedSourceFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
 
@@ -43,11 +43,11 @@ class SingleFileExecutionAction extends AnAction {
             nearestCmake = project.getBasePath() + CMAKE_FILE;
         }
 
-        File file = new File(nearestCmake);
-        VirtualFile cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        File appendingCmake = new File(nearestCmake);
+        VirtualFile cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(appendingCmake);
         if (cmakeFile == null) {
             Notifications.Bus.notify (
-                    new Notification("singlefileexecutionaction", "Single File Execution Plugin", "Fail to access " + nearestCmake, NotificationType.ERROR)
+                    new Notification("new_entry_point_action", "Single File Execution Plugin", "Fail to access " + nearestCmake, NotificationType.ERROR)
             );
             return;
         }
@@ -61,8 +61,6 @@ class SingleFileExecutionAction extends AnAction {
             relativeSourcePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
         }
 
-        /* parse cmakelistDocument to check existence of exe_name */
-        /* See http://mmasashi.hatenablog.com/entry/20091129/1259511129 for lazy, greedy search */
         String regex = "^add_executable\\s*?\\(\\s*?" + exeName + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
 
         Pattern pattern = Pattern.compile(regex);
@@ -73,7 +71,6 @@ class SingleFileExecutionAction extends AnAction {
             String line = scanner.nextLine();
             Matcher m = pattern.matcher(line);
             if (m.find()) {
-                //String existingExeName = m.group(1);
                 String existingSourceName = m.group(1);
                 if (existingSourceName.contains(relativeSourcePath)) {
                     exeExistFlag = EXE_EXIST_SAME_SOURCE;
@@ -85,18 +82,17 @@ class SingleFileExecutionAction extends AnAction {
         }
         scanner.close();
 
-        //LocalFileSystem.getInstance().findFileByIoFile();
         switch(exeExistFlag) {
             case EXE_NOT_EXIST:
                 insertAddExecutable(cmakelistDocument, exeName, relativeSourcePath);
                 Notifications.Bus.notify (
-                        new Notification("singlefileexecutionaction", "Single File Execution Plugin", "add_executable added for " + fileName + ".", NotificationType.INFORMATION)
+                        new Notification("new_entry_point_action", "New Entry Point Plugin", "add_executable added for " + fileName + ".", NotificationType.INFORMATION)
                 );
                 break;
             case EXE_EXIST_SAME_SOURCE:
                 // skip setText
                 Notifications.Bus.notify (
-                        new Notification("singlefileexecutionaction", "Single File Execution Plugin", "add_executable for this source already exists.", NotificationType.INFORMATION)
+                        new Notification("new_entry_point_action", "New Entry Point Plugin", "add_executable for this source already exists.", NotificationType.INFORMATION)
                 );
                 break;
             case EXE_EXIST_DIFFERENT_SOURCE:
@@ -112,7 +108,7 @@ class SingleFileExecutionAction extends AnAction {
                     // Ok
                     updateAddExecutable(cmakelistDocument, exeName, relativeSourcePath);
                     Notifications.Bus.notify(
-                            new Notification("singlefileexecutionaction", "Single File Execution Plugin", "add_executable overwritten", NotificationType.INFORMATION)
+                            new Notification("new_entry_point_action", "New Entry Point Plugin", "add_executable overwritten", NotificationType.INFORMATION)
                     );
                 }
                 break;
@@ -198,7 +194,7 @@ class SingleFileExecutionAction extends AnAction {
     private String buildExeName(String exeName) {
         String newExeName;
         /* %FILENAME% replacement */
-        newExeName = exeName.replace(SingleFileExecutionConfig.EXECUTABLE_NAME_FILENAME, targetedSourceFile.getNameWithoutExtension());
+        newExeName = exeName.replace(NewEntryPointConfig.EXECUTABLE_NAME_FILENAME, targetedSourceFile.getNameWithoutExtension());
         return newExeName;
     }
 
@@ -209,8 +205,8 @@ class SingleFileExecutionAction extends AnAction {
         String sourceDirRelativePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(
                 new File(targetedSourceFile.getPath()).getParentFile().toURI()).getPath();
 
-        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(SingleFileExecutionConfig.PROJECT_DIR, "${PROJECT_SOURCE_DIR}");
-        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(SingleFileExecutionConfig.FILE_DIR, "${CMAKE_CURRENT_SOURCE_DIR}/" + sourceDirRelativePath);
+        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(NewEntryPointConfig.PROJECT_DIR, "${PROJECT_SOURCE_DIR}");
+        newRuntimeOutputDirectory = newRuntimeOutputDirectory.replace(NewEntryPointConfig.FILE_DIR, "${CMAKE_CURRENT_SOURCE_DIR}/" + sourceDirRelativePath);
         return newRuntimeOutputDirectory;
     }
 

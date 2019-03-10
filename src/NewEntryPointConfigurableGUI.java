@@ -8,9 +8,9 @@ import java.awt.*;
 import java.util.Objects;
 
 /**
- * GUI for the {@link SingleFileExecutionConfigurable}
+ * GUI for the {@link NewEntryPointConfigurable}
  */
-class SingleFileExecutionConfigurableGUI {
+class NewEntryPointConfigurableGUI {
     private JPanel rootPanel;
     private JTextField exeNameTextField;
     private JCheckBox notShowDialogCheckBox;
@@ -18,10 +18,10 @@ class SingleFileExecutionConfigurableGUI {
     private JPanel outputPathSetting;
     private JPanel exeNameSetting;
     private JTextField runtimeOutputDirectoryTextField;
-    private SingleFileExecutionConfig mConfig;
+    private NewEntryPointConfig mConfig;
 
     void createUI(Project project) {
-        mConfig = SingleFileExecutionConfig.getInstance(project);
+        mConfig = NewEntryPointConfig.getInstance(project);
         exeNameTextField.setText(Objects.requireNonNull(mConfig).getExecutableName());
         runtimeOutputDirectoryTextField.setText(mConfig.getRuntimeOutputDirectory());
         notShowDialogCheckBox.setSelected(mConfig.notShowOverwriteConfirmDialog);

@@ -21,7 +21,7 @@ class ExeOverwriteConfirmDialog extends JDialog {
      * 1: OK     (when ok button pressed & doNotShowItCheckBox is not selected)
      */
     private int okFlag = OK_FLAG_CANCEL;
-    private static SingleFileExecutionConfig config;
+    private static NewEntryPointConfig config;
 
 
     private ExeOverwriteConfirmDialog() {
@@ -58,7 +58,7 @@ class ExeOverwriteConfirmDialog extends JDialog {
      */
     static int show(Project project) {
         ExeOverwriteConfirmDialog dialog = new ExeOverwriteConfirmDialog();
-        config = SingleFileExecutionConfig.getInstance(project);
+        config = NewEntryPointConfig.getInstance(project);
         dialog.setLocationRelativeTo(null);
         dialog.doNotShowItCheckBox.setSelected(config.notShowOverwriteConfirmDialog);
         dialog.doNotShowItCheckBox.addChangeListener(e -> config.notShowOverwriteConfirmDialog = dialog.doNotShowItCheckBox.isSelected());
