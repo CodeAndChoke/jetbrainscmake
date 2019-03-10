@@ -1,4 +1,4 @@
-# SingleFileExecutionPlugin
+# New Single Entry Point
 [CLion](https://www.jetbrains.com/clion/) plugin to execute single file .c/.cpp file quickly.
 
 ## Description
