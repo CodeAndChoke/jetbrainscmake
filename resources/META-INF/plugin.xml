@@ -1,17 +1,20 @@
 <idea-plugin>
   <id>de.longnguyen.plugin.clion.single.executable.plugin</id>
-  <name>C/C++ Single Executable</name>
+  <name>C/C++ New Single Entry Point</name>
   <version>1.0</version>
   <vendor email="long.nguyen2306@protonmail.com" url="https://long-nguyen.de">Long Nguyen</vendor>
 
   <description><![CDATA[
-      When you want to build and run single c/cpp file in CLion, <code>CMakeLists.txt</code> needs to be configured
-      to declare <code>add_executable()</code>.
+      If you are from Java world, you might be used to simply creating a new single <code>public static void main</code>
+      in order to create a new entry point for testing purpose.
+
+      With CMake things are more complicating since all files needed to be linked together and duplicated method names
+      will not be tolerated, therefore<code>CMakeLists.txt</code> needs to be configured
+      to declare <code>add_executable(Example example.c)</code> to run a new entry point.
       It is troublesome when you want to run many of the files independently within the same project.<br>
-      This plugin supports to insert <code>add_executable()</code> statement into <code>CMakeLists.txt</code>, so that you can easily
-      build and run a single file.
-      Also, you can specify a location of directory for build executable file for each target.<br/>
-      Links:<br/>
+      This plugin supports to insert <code>add_executable()</code> statement into <code>CMakeLists.txt</code>.
+      It will try to find the nearest <code>CMakeLists.txt</code> on the same folder level with the targeted
+      source code. If it doesn't exist, the root <code>CMakeLists.txt</code> will be token.
        <ul>
        <li><a href="https://github.com/longnguyen2306/CLion-Single-Executable">github page</a></li>
        </ul>
@@ -21,13 +24,13 @@
   <depends>com.intellij.modules.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <projectConfigurable groupId="tools" displayName="Single Executable Plugin" id="preferences.SingleFileExecutionConfigurable" instance="SingleFileExecutionConfigurable" />
+    <projectConfigurable groupId="tools" displayName="New Single Entry Point" id="preferences.SingleFileExecutionConfigurable" instance="SingleFileExecutionConfigurable" />
     <projectService serviceInterface="SingleFileExecutionConfig" serviceImplementation="SingleFileExecutionConfig"/>
   </extensions>
 
   <actions>
     <action id="SingleFileExecutionAction" class="SingleFileExecutionAction" text="Add executable for single c/cpp file"
-            description="Adding add_executable() to CMakeLists.txt">
+            description="Adding a new add_executable() to CMakeLists.txt">
       <add-to-group group-id="CodeMenu" anchor="last"/>
       <add-to-group group-id="EditorPopupMenu"/>
       <keyboard-shortcut keymap="$default" first-keystroke="shift alt E"/>
