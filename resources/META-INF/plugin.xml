@@ -1,0 +1,58 @@
+<idea-plugin>
+  <id>com.corochann.plugin.clion.singlefileexecutionplugin</id>
+  <name>C/C++ Single File Execution</name>
+  <version>1.3</version>
+  <vendor email="corochannz@gmail.com" url="http://corochann.com">corochann</vendor>
+
+  <description><![CDATA[
+      When you want to build and run single c/cpp file in CLion, <code>CMakeLists.txt</code> needs to be configured
+      to declare <code>add_executable()</code>.
+      It is troublesome when you want to run many of the files independently within the same project.<br>
+      This plugin supports to insert <code>add_executable()</code> statement into <code>CMakeLists.txt</code>, so that you can easily
+      build and run a single file.
+      Also, you can specify a location of directory for build executable file for each target.<br/>
+      Links:<br/>
+       <ul>
+       <li><a href="http://corochann.com/projects/single-file-execution-plugin">Document page</a></li>
+       <li><a href="https://github.com/corochann/SingleFileExecutionPlugin">github page</a></li>
+       </ul>
+    ]]></description>
+
+  <change-notes><![CDATA[
+      <p>version 1.3: Bug fix for config. - Settings was not saved persistently</p>
+      <p>version 1.2:</p>
+      <ul>
+      <li>Add set_target_properties() configuration for target specific runtime output directory setting.</li>
+      <li>Bug fix: handle directory name including whitespace</li>
+      </ul>
+      <p>version 1.1: Bug fix.</p>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="141.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  <depends>com.intellij.modules.clion</depends>
+  -->
+  <depends>com.intellij.modules.lang</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable groupId="tools" displayName="Single File Execution Plugin" id="preferences.SingleFileExecutionConfigurable" instance="SingleFileExecutionConfigurable" />
+    <projectService serviceInterface="SingleFileExecutionConfig" serviceImplementation="SingleFileExecutionConfig"/>
+  </extensions>
+
+  <actions>
+    <!-- Add your actions here -->
+    <action id="SingleFileExecutionAction" class="SingleFileExecutionAction" text="Add executable for single c/cpp file"
+            description="Adding add_executable() to CMakeLists.txt">
+      <add-to-group group-id="CodeMenu" anchor="last"/>
+      <add-to-group group-id="EditorPopupMenu"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt E"/>
+    </action>
+  </actions>
+
+</idea-plugin>
