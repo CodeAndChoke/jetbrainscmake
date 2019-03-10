@@ -19,9 +19,6 @@ import java.util.Objects;
                 @Storage("SingleFileExecutionConfig.xml")}
 )
 public class SingleFileExecutionConfig implements PersistentStateComponent<SingleFileExecutionConfig> {
-
-    /* NOTE: member should be "public" to be saved in xml */
-    /* add_executable(): exe name */
     static final String EXECUTABLE_NAME_FILENAME = "%FILENAME%";
     private static final String DEFAULT_EXECUTABLE_NAME = EXECUTABLE_NAME_FILENAME;
     private String executableName = DEFAULT_EXECUTABLE_NAME;  // persistent member should be public

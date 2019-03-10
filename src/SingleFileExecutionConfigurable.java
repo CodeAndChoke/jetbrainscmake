@@ -18,7 +18,6 @@ class SingleFileExecutionConfigurable implements SearchableConfigurable {
 
     public SingleFileExecutionConfigurable(@NotNull Project project) {
         mProject = project;
-        final SingleFileExecutionConfig mConfig = SingleFileExecutionConfig.getInstance(project);
     }
 
     @Nls

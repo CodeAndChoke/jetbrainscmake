@@ -5,6 +5,7 @@ import com.intellij.uiDesigner.core.Spacer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * GUI for the {@link SingleFileExecutionConfigurable}
@@ -23,32 +24,32 @@ class SingleFileExecutionConfigurableGUI {
         // $$$setupUI$$$ will be executed here (inserted automatically)
     }
 
-    public void createUI(Project project) {
+    void createUI(Project project) {
         mConfig = SingleFileExecutionConfig.getInstance(project);
-        exeNameTextField.setText(mConfig.getExecutableName());
+        exeNameTextField.setText(Objects.requireNonNull(mConfig).getExecutableName());
         runtimeOutputDirectoryTextField.setText(mConfig.getRuntimeOutputDirectory());
         notShowDialogCheckBox.setSelected(mConfig.notShowOverwriteConfirmDialog);
     }
 
-    public JPanel getRootPanel() {
+    JPanel getRootPanel() {
         return rootPanel;
     }
 
-    public boolean isModified() {
+    boolean isModified() {
         boolean modified = false;
-        modified |= !exeNameTextField.getText().equals(mConfig.getExecutableName());
+        modified = !exeNameTextField.getText().equals(mConfig.getExecutableName());
         modified |= !runtimeOutputDirectoryTextField.getText().equals(mConfig.getRuntimeOutputDirectory());
         modified |= !notShowDialogCheckBox.isSelected() == mConfig.notShowOverwriteConfirmDialog;
         return modified;
     }
 
-    public void apply() {
+    void apply() {
         mConfig.setExecutableName(exeNameTextField.getText());
         mConfig.setRuntimeOutputDirectory(runtimeOutputDirectoryTextField.getText());
         mConfig.notShowOverwriteConfirmDialog = notShowDialogCheckBox.isSelected();
     }
 
-    public void reset() {
+    void reset() {
         exeNameTextField.setText(mConfig.getExecutableName());
         runtimeOutputDirectoryTextField.setText(mConfig.getRuntimeOutputDirectory());
         notShowDialogCheckBox.setSelected(mConfig.notShowOverwriteConfirmDialog);

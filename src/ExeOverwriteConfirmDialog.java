@@ -15,7 +15,7 @@ class ExeOverwriteConfirmDialog extends JDialog {
     private JCheckBox doNotShowItCheckBox;
 
     private static final int OK_FLAG_CANCEL = 0;
-    public static final int OK_FLAG_OK = 1;
+    static final int OK_FLAG_OK = 1;
     /**
      * 0: not OK (when cancel button pressed etc.)
      * 1: OK     (when ok button pressed & doNotShowItCheckBox is not selected)
@@ -33,7 +33,6 @@ class ExeOverwriteConfirmDialog extends JDialog {
 
         buttonCancel.addActionListener(e -> onCancel());
 
-// call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -41,24 +40,23 @@ class ExeOverwriteConfirmDialog extends JDialog {
             }
         });
 
-// call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private void onOK() {
-// add your code here
         okFlag = OK_FLAG_OK;
         dispose();
     }
 
     private void onCancel() {
-// add your code here if necessary
         okFlag = OK_FLAG_CANCEL;
         dispose();
     }
 
-    /** return okFlag, indicates user pressed ok or not */
-    public static int show(Project project) {
+    /**
+     * return okFlag, indicates user pressed ok or not
+     */
+    static int show(Project project) {
         ExeOverwriteConfirmDialog dialog = new ExeOverwriteConfirmDialog();
         config = SingleFileExecutionConfig.getInstance(project);
         dialog.setLocationRelativeTo(null);
