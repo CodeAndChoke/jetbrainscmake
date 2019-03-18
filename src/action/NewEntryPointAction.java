@@ -87,7 +87,7 @@ class NewEntryPointAction extends AnAction {
             case EXE_NOT_EXIST:
                 insertAddExecutable(actionProperty);
                 Notifications.Bus.notify(
-                        new Notification("new_entry_point_action",
+                        new Notification("new_executable_action",
                                 "New Entry Point Plugin",
                                 "add_executable added for " + fileName + ".",
                                 NotificationType.INFORMATION)
@@ -95,7 +95,7 @@ class NewEntryPointAction extends AnAction {
                 break;
             case EXE_EXIST_SAME_SOURCE:
                 Notifications.Bus.notify(
-                        new Notification("new_entry_point_action",
+                        new Notification("new_executable_action",
                                 "New Entry Point Plugin",
                                 "add_executable for this source already exists.",
                                 NotificationType.INFORMATION)
@@ -112,7 +112,7 @@ class NewEntryPointAction extends AnAction {
                 if (okFlag == ExeOverwriteConfirmDialog.OK_FLAG_OK) {
                     updateAddExecutable(actionProperty);
                     Notifications.Bus.notify(
-                            new Notification("new_entry_point_action",
+                            new Notification("new_executable_action",
                                     "New Entry Point Plugin",
                                     "add_executable overwritten",
                                     NotificationType.INFORMATION)
@@ -184,8 +184,8 @@ class NewEntryPointAction extends AnAction {
         actionProperty.setCmakeFile(LocalFileSystem.getInstance().findFileByIoFile(appendingCmake));
         if (actionProperty.getCmakeFile() == null) {
             Notifications.Bus.notify(new Notification(
-                    "new_entry_point_action",
-                    "Single File Execution Plugin",
+                    "new_executable_action",
+                    "New Executable Plugin",
                     "Fail to access " + nearestCmake,
                     NotificationType.ERROR));
             return null;
