@@ -33,56 +33,59 @@ class NewEntryPointAction extends AnAction {
     private static final int EXE_EXIST_DIFFERENT_SOURCE = 2;
     private static final String CMAKE_FILE = "/CMakeLists.txt";
 
-    private VirtualFile targetedSourceFile;
-    private ExecutableState executableState;
-    private Project project;
-    private VirtualFile cmakeFile;
-    private boolean cmakeOnCurrentFolderFound = true;
-
     /**
      * User pushed the hot key and action needed to be verified
      */
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        String nearestCmake = processEvent(event);
-        if (nearestCmake == null) {
+
+        // First step: Process the action event and find out if the project has any CMake file
+        ActionProperty actionProperty = processEvent(event);
+        if (actionProperty == null) {
             return;
         }
 
-        Document cmakeDocument = FileDocumentManager.getInstance().getDocument(cmakeFile);
+
+        actionProperty.setCmakeDocument(FileDocumentManager.getInstance().getDocument(actionProperty.getCmakeFile()));
         String fileName;
-        if (targetedSourceFile == null) {
+        if (actionProperty.getTargetedSourceFile() == null) {
             fileName = null;
         } else {
-            fileName = targetedSourceFile.getName();
+            fileName = actionProperty.getTargetedSourceFile().getName();
         }
+        actionProperty.setFileName(fileName);
 
-        String executable = buildExecutableName(executableState.getExecutableName());
+        String executable = buildExecutableName(actionProperty);
+
+        actionProperty.setExecutable(executable);
 
         String relativeSourcePath;
 
-        if (!cmakeOnCurrentFolderFound) {
-            relativeSourcePath = targetedSourceFile.getNameWithoutExtension();
+        if (!actionProperty.isCmakeOnCurrentFolderFound()) {
+            relativeSourcePath = actionProperty.getTargetedSourceFile().getNameWithoutExtension();
         } else {
-            relativeSourcePath = getRelativeSourcePath();
+            relativeSourcePath = getRelativeSourcePath(actionProperty);
         }
 
-        int executableExists = processCMakeFile(Objects.requireNonNull(cmakeDocument).getText(), executable, relativeSourcePath);
-        finishEvent(executableExists, cmakeDocument, executable, relativeSourcePath, fileName);
+        actionProperty.setRelativeSourcePath(relativeSourcePath);
+
+        processCMakeFile(actionProperty);
+
+
+
+        finishEvent(actionProperty);
     }
 
     /**
      * After every is verfied, this method will execute the calculated result
-     * @param executableExists flag if the executable's name already exists
-     * @param cmakeDocument the found cmake document
-     * @param executable name of the created executable
-     * @param relativeSourcePath relative path to the chose source file
-     * @param fileName soure file's name
      */
-    private void finishEvent(int executableExists, Document cmakeDocument, String executable, String relativeSourcePath, String fileName){
+    private void finishEvent(ActionProperty actionProperty){
+        int executableExists = actionProperty.getExecutableExists();
+        String fileName = actionProperty.getFileName();
+        ExecutableState executableState = actionProperty.getExecutableState();
         switch (executableExists) {
             case EXE_NOT_EXIST:
-                insertAddExecutable(cmakeDocument, executable, relativeSourcePath);
+                insertAddExecutable(actionProperty);
                 Notifications.Bus.notify(
                         new Notification("new_entry_point_action",
                                 "New Entry Point Plugin",
@@ -103,11 +106,11 @@ class NewEntryPointAction extends AnAction {
                 if (executableState.isNoOverWriteConfirmDialog()) {
                     okFlag = ExeOverwriteConfirmDialog.OK_FLAG_OK;
                 } else {
-                    okFlag = ExeOverwriteConfirmDialog.show(project);
+                    okFlag = ExeOverwriteConfirmDialog.show(actionProperty.getProject());
                 }
 
                 if (okFlag == ExeOverwriteConfirmDialog.OK_FLAG_OK) {
-                    updateAddExecutable(cmakeDocument, executable, relativeSourcePath);
+                    updateAddExecutable(actionProperty);
                     Notifications.Bus.notify(
                             new Notification("new_entry_point_action",
                                     "New Entry Point Plugin",
@@ -123,14 +126,12 @@ class NewEntryPointAction extends AnAction {
 
     /**
      * Process the text of the input cmake file and find out if the executable name already exists
-     * @param CMakeText text of the found cmake file
-     * @param executable executable's name
-     * @param relativeSourcePath relative path to the source file
-     * @return flag if the the same executable was found
      */
-    private int processCMakeFile(@NotNull String CMakeText, String executable, String relativeSourcePath){
+    private void processCMakeFile(ActionProperty actionProperty){
+        String executable = actionProperty.getExecutable();
         String regex = "^add_executable\\s*?\\(\\s*?" + executable + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
         Pattern pattern = Pattern.compile(regex);
+        String CMakeText = actionProperty.getCmakeDocument().getText();
         Scanner scanner = new Scanner(CMakeText);
         int executableExists = EXE_NOT_EXIST;
         while (scanner.hasNextLine()) {
@@ -138,7 +139,7 @@ class NewEntryPointAction extends AnAction {
             Matcher m = pattern.matcher(line);
             if (m.find()) {
                 String existingSourceName = m.group(1);
-                if (existingSourceName.contains(relativeSourcePath)) {
+                if (existingSourceName.contains(actionProperty.getRelativeSourcePath())) {
                     executableExists = EXE_EXIST_SAME_SOURCE;
                 } else {
                     executableExists = EXE_EXIST_DIFFERENT_SOURCE;
@@ -147,39 +148,41 @@ class NewEntryPointAction extends AnAction {
             }
         }
         scanner.close();
-        return executableExists;
+        actionProperty.setExecutableExists(executableExists);
     }
 
     /**
      * @return the path from the project's root to the targeted source file
      */
-    private String getRelativeSourcePath() {
+    private static String getRelativeSourcePath(ActionProperty actionProperty) {
+        VirtualFile targetedSourceFile = actionProperty.getTargetedSourceFile();
         return new File(Objects.requireNonNull(targetedSourceFile.getParent().getPath())).toURI().relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
     }
 
     /**
-     * Process the incoming event and return the name of the nearest cmake file
+     * Process the incoming event and return the name of the nearest cmake file.
      *
      * @param event incoming event
      * @return name of the nearest cmake file
      */
-    private String processEvent(AnActionEvent event) {
-        project = event.getRequiredData(CommonDataKeys.PROJECT);
-        executableState = ExecutableState.getInstance(project);
-        targetedSourceFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
-        String nearestCmake = Objects.requireNonNull(targetedSourceFile).getParent().getPath() + CMAKE_FILE;
+    private ActionProperty processEvent(AnActionEvent event) {
+        ActionProperty actionProperty = new ActionProperty();
+        actionProperty.setProject(event.getRequiredData(CommonDataKeys.PROJECT));
+        actionProperty.setExecutableState(ExecutableState.getInstance(actionProperty.getProject()));
+        actionProperty.setTargetedSourceFile(event.getData(PlatformDataKeys.VIRTUAL_FILE));
+        String nearestCmake = Objects.requireNonNull(actionProperty.getTargetedSourceFile()).getParent().getPath() + CMAKE_FILE;
 
         File cmakeOnCurrentFolder = new File(nearestCmake);
         if (!cmakeOnCurrentFolder.exists()) {
-            nearestCmake = project.getBasePath() + CMAKE_FILE;
-            cmakeOnCurrentFolderFound = false;
+            nearestCmake = actionProperty.getProject().getBasePath() + CMAKE_FILE;
+            actionProperty.setCmakeOnCurrentFolderFound(false);
         } else {
-            cmakeOnCurrentFolderFound = true;
+            actionProperty.setCmakeOnCurrentFolderFound(true);
         }
 
         File appendingCmake = new File(nearestCmake);
-        cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(appendingCmake);
-        if (cmakeFile == null) {
+        actionProperty.setCmakeFile(LocalFileSystem.getInstance().findFileByIoFile(appendingCmake));
+        if (actionProperty.getCmakeFile() == null) {
             Notifications.Bus.notify(new Notification(
                     "new_entry_point_action",
                     "Single File Execution Plugin",
@@ -187,27 +190,30 @@ class NewEntryPointAction extends AnAction {
                     NotificationType.ERROR));
             return null;
         }
-        return nearestCmake;
+        return actionProperty;
     }
 
-    private void insertAddExecutable(final Document cmakelistDocument, final String exeName, final String relativeSourcePath) {
+    private void insertAddExecutable(ActionProperty actionProperty) {
+        Document cmakelistDocument = actionProperty.getCmakeDocument();
+        String exeName = actionProperty.getExecutable();
         ApplicationManager.getApplication().runWriteAction(() -> {
             String updatedText = cmakelistDocument.getText();
-            updatedText += "\n" + constructAddExecutable(exeName, relativeSourcePath);
-            String runtimeDir = executableState.getRuntimeOutputDirectory();
+            updatedText += "\n" + constructAddExecutable(actionProperty);
+            String runtimeDir = actionProperty.getExecutableState().getRuntimeOutputDirectory();
             if (runtimeDir != null && !runtimeDir.equals("")) {
-                String outputDir = quoteString(buildOutputDirectory());
+                String outputDir = quoteString(buildOutputDirectory(actionProperty));
                 updatedText += "\n" + constructSetTargetProperties(exeName, outputDir);
             }
             cmakelistDocument.setText(updatedText);
         });
     }
 
-    private void updateAddExecutable(final Document cmakelistDocument,
-                                     final String exeName,
-                                     final String relativeSourcePath) {
-        String runtimeDir = executableState.getRuntimeOutputDirectory();
+    private void updateAddExecutable(ActionProperty actionProperty) {
+        String runtimeDir = actionProperty.getExecutableState().getRuntimeOutputDirectory();
         StringBuilder updatedDocument = new StringBuilder();
+        String exeName = actionProperty.getExecutable();
+        Document cmakelistDocument = actionProperty.getCmakeDocument();
+        String relativeSourcePath = actionProperty.getRelativeSourcePath();
 
         String regex = "^add_executable\\s*?\\(\\s*?" + exeName + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
         Pattern pattern = Pattern.compile(regex);
@@ -225,9 +231,9 @@ class NewEntryPointAction extends AnAction {
                 continue;
             }
             if (m.find()) {
-                line = m.replaceFirst(constructAddExecutable(exeName, relativeSourcePath));
+                line = m.replaceFirst(constructAddExecutable(actionProperty));
                 if (runtimeDir != null && !runtimeDir.equals("")) {
-                    String outputDir = quoteString(buildOutputDirectory());
+                    String outputDir = quoteString(buildOutputDirectory(actionProperty));
                     line += "\n" + constructSetTargetProperties(exeName, outputDir);
                 }
             }
@@ -241,12 +247,11 @@ class NewEntryPointAction extends AnAction {
     /**
      * Create a cmake valid command to add a new executable
      *
-     * @param fileName       name of the new executable
-     * @param sourceFilePath name of the file
      * @return the possible new executable
      */
-    private String constructAddExecutable(String fileName, String sourceFilePath) {
-        return "add_executable(" + fileName + " " + quotingSourcePath(sourceFilePath) + ")";
+    private String constructAddExecutable(ActionProperty actionProperty) {
+        return "add_executable(" + actionProperty.getFileName() + " " +
+                quotingSourcePath(actionProperty.getRelativeSourcePath()) + ")";
     }
 
     private String constructSetTargetProperties(String executableName, String outputDirectory) {
@@ -257,19 +262,18 @@ class NewEntryPointAction extends AnAction {
      * Build the name of the new executable with help of the chose source file.
      * <p>
      * The extension of the source file will be simply removed
-     *
-     * @param sourceFile name of the source file
+     *#
      * @return the new executable's name
      */
-    private String buildExecutableName(String sourceFile) {
-        return sourceFile.replace(ExecutableState.EXECUTABLE_NAME_FILENAME,
-                targetedSourceFile.getNameWithoutExtension());
+    private String buildExecutableName(ActionProperty actionProperty) {
+        return actionProperty.getTargetedSourceFile().getName().replace(ExecutableState.EXECUTABLE_NAME_FILENAME,
+                actionProperty.getTargetedSourceFile().getNameWithoutExtension());
     }
 
-    private String buildOutputDirectory() {
-        String newOutPutDirectory = executableState.getRuntimeOutputDirectory();
-        String sourceDirRelativePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(
-                new File(targetedSourceFile.getPath()).getParentFile().toURI()).getPath();
+    private String buildOutputDirectory(ActionProperty actionProperty) {
+        String newOutPutDirectory = actionProperty.getExecutableState().getRuntimeOutputDirectory();
+        String sourceDirRelativePath = new File(Objects.requireNonNull(actionProperty.getProject().getBasePath())).toURI().relativize(
+                new File(actionProperty.getTargetedSourceFile().getPath()).getParentFile().toURI()).getPath();
 
         newOutPutDirectory = newOutPutDirectory.replace(ExecutableState.PROJECT_DIR, "${PROJECT_SOURCE_DIR}");
         newOutPutDirectory = newOutPutDirectory.replace(ExecutableState.FILE_DIR, "${CMAKE_CURRENT_SOURCE_DIR}/" + sourceDirRelativePath);
