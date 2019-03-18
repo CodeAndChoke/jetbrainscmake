@@ -1,3 +1,5 @@
+package gui;
+
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nls;
@@ -23,19 +25,19 @@ class NewEntryPointConfigurable implements SearchableConfigurable {
     @Nls
     @Override
     public String getDisplayName() {
-        return "Single File Execution Plugin";
+        return "New main() method C/C++ Plugin";
     }
 
     @Nullable
     @Override
     public String getHelpTopic() {
-        return "preference.NewEntryPointConfigurable";
+        return "preference.gui.NewEntryPointConfigurable";
     }
 
     @NotNull
     @Override
     public String getId() {
-        return "preference.NewEntryPointConfigurable";
+        return "preference.gui.NewEntryPointConfigurable";
     }
 
     @Nullable

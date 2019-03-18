@@ -1,13 +1,16 @@
+package gui;
+
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import config.ExecutableState;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-class ExeOverwriteConfirmDialog extends JDialog {
+public class ExeOverwriteConfirmDialog extends JDialog {
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -15,13 +18,13 @@ class ExeOverwriteConfirmDialog extends JDialog {
     private JCheckBox doNotShowItCheckBox;
 
     private static final int OK_FLAG_CANCEL = 0;
-    static final int OK_FLAG_OK = 1;
+    public static final int OK_FLAG_OK = 1;
     /**
      * 0: not OK (when cancel button pressed etc.)
      * 1: OK     (when ok button pressed & doNotShowItCheckBox is not selected)
      */
     private int okFlag = OK_FLAG_CANCEL;
-    private static NewEntryPointConfig config;
+    private static ExecutableState config;
 
 
     private ExeOverwriteConfirmDialog() {
@@ -56,23 +59,21 @@ class ExeOverwriteConfirmDialog extends JDialog {
     /**
      * return okFlag, indicates user pressed ok or not
      */
-    static int show(Project project) {
+    public static int show(Project project) {
         ExeOverwriteConfirmDialog dialog = new ExeOverwriteConfirmDialog();
-        config = NewEntryPointConfig.getInstance(project);
+        config = ExecutableState.getInstance(project);
         dialog.setLocationRelativeTo(null);
-        dialog.doNotShowItCheckBox.setSelected(config.notShowOverwriteConfirmDialog);
-        dialog.doNotShowItCheckBox.addChangeListener(e -> config.notShowOverwriteConfirmDialog = dialog.doNotShowItCheckBox.isSelected());
+        dialog.doNotShowItCheckBox.setSelected(config.isNotShowOverwriteConfirmDialog());
+        dialog.doNotShowItCheckBox.addChangeListener(e -> config.setNotShowOverwriteConfirmDialog(dialog.doNotShowItCheckBox.isSelected()));
         dialog.pack();
         dialog.setVisible(true);
         return dialog.okFlag;
     }
 
-    // not used, instead use show
     public static void main(String[] args) {
         ExeOverwriteConfirmDialog dialog = new ExeOverwriteConfirmDialog();
         dialog.pack();
         dialog.setVisible(true);
-        //System.exit(0);
     }
 
     {

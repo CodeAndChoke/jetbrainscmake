@@ -1,39 +1,35 @@
 <idea-plugin>
   <id>de.longnguyen.plugin.clion.new.entry.point.plugin</id>
-  <name>C/C++ New Single Entry Point</name>
+  <name>New main() method C/C++</name>
   <version>1.1</version>
   <vendor email="long.nguyen2306@protonmail.com" url="https://long-nguyen.de">Long Nguyen</vendor>
 
   <description><![CDATA[
-      If you are from Java world, you might be used to simply creating a new single <code>public static void main</code>
-      in order to create a new entry point for testing purpose.
+      If you are from the Java world, you might be used to be able to create a new single
+      <code>public static void main(String [] args)</code> in every class in order test some thing
+      really quick.
 
-      With CMake things are more complicating since all files needed to be linked together and duplicated method names
-      will not be tolerated, therefore<code>CMakeLists.txt</code> needs to be configured
-      to declare <code>add_executable(Example example.c)</code> to run a new entry point.
-      It is troublesome when you want to run many of the files independently within the same project.<br><br>
+      With CMake things are more complicated since all files needed to be linked together in an
+      <code>executable</code> and duplicated method names will not be tolerated.<br><br>
 
-      This plugin supports to insert <code>add_executable()</code> statement into <code>CMakeLists.txt</code>.
-      It will try to find the nearest CMake file on the same folder level with the targeted
-      source code. If it doesn't exist, the root CMake file will be token.<br><br>
+      This plugin will automatically insert a new <code>executable</code> for a single source file in the nearest CMake file.<br><br>
 
       Simply choose a C/C++ source file you want to execute separately from your main project and press the hot key
       <code>Shift + Alt + E</code>
-       <ul>
-       <li><a href="https://github.com/longnguyen2306/CLion-Single-Executable">github page</a></li>
-       </ul>
+
+      <a href="https://github.com/longnguyen2306/CLion-Single-Executable">github page</a></li>
     ]]></description>
 
   <idea-version since-build="141.0"/>
   <depends>com.intellij.modules.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <projectConfigurable groupId="tools" displayName="New Single Entry Point" id="preferences.NewEntryPointConfigurable" instance="NewEntryPointConfigurable" />
-    <projectService serviceInterface="NewEntryPointConfig" serviceImplementation="NewEntryPointConfig"/>
+    <projectConfigurable groupId="tools" displayName="New Single Entry Point" id="preferences.gui.NewEntryPointConfigurable" instance="gui.NewEntryPointConfigurable" />
+    <projectService serviceInterface="config.ExecutableState" serviceImplementation="config.ExecutableState"/>
   </extensions>
 
   <actions>
-    <action id="new_entry_point_action" class="NewEntryPointAction" text="Add executable for single c/cpp file"
+    <action id="new_entry_point_action" class="action.NewEntryPointAction" text="Add executable for single c/cpp file"
             description="Adding a new add_executable() to CMakeLists.txt">
       <add-to-group group-id="CodeMenu" anchor="last"/>
       <add-to-group group-id="EditorPopupMenu"/>
