@@ -63,8 +63,8 @@ public class ExeOverwriteConfirmDialog extends JDialog {
         ExeOverwriteConfirmDialog dialog = new ExeOverwriteConfirmDialog();
         config = ExecutableState.getInstance(project);
         dialog.setLocationRelativeTo(null);
-        dialog.doNotShowItCheckBox.setSelected(config.isNotShowOverwriteConfirmDialog());
-        dialog.doNotShowItCheckBox.addChangeListener(e -> config.setNotShowOverwriteConfirmDialog(dialog.doNotShowItCheckBox.isSelected()));
+        dialog.doNotShowItCheckBox.setSelected(config.isNoOverWriteConfirmDialog());
+        dialog.doNotShowItCheckBox.addChangeListener(e -> config.setNoOverWriteConfirmDialog(dialog.doNotShowItCheckBox.isSelected()));
         dialog.pack();
         dialog.setVisible(true);
         return dialog.okFlag;

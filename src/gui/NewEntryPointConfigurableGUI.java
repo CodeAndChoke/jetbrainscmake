@@ -27,7 +27,7 @@ class NewEntryPointConfigurableGUI {
         mConfig = ExecutableState.getInstance(project);
         exeNameTextField.setText(Objects.requireNonNull(mConfig).getExecutableName());
         runtimeOutputDirectoryTextField.setText(mConfig.getRuntimeOutputDirectory());
-        notShowDialogCheckBox.setSelected(mConfig.isNotShowOverwriteConfirmDialog());
+        notShowDialogCheckBox.setSelected(mConfig.isNoOverWriteConfirmDialog());
     }
 
     JPanel getRootPanel() {
@@ -38,20 +38,20 @@ class NewEntryPointConfigurableGUI {
         boolean modified;
         modified = !exeNameTextField.getText().equals(mConfig.getExecutableName());
         modified |= !runtimeOutputDirectoryTextField.getText().equals(mConfig.getRuntimeOutputDirectory());
-        modified |= !notShowDialogCheckBox.isSelected() == mConfig.isNotShowOverwriteConfirmDialog();
+        modified |= !notShowDialogCheckBox.isSelected() == mConfig.isNoOverWriteConfirmDialog();
         return modified;
     }
 
     void apply() {
         mConfig.setExecutableName(exeNameTextField.getText());
         mConfig.setRuntimeOutputDirectory(runtimeOutputDirectoryTextField.getText());
-        mConfig.setNotShowOverwriteConfirmDialog(notShowDialogCheckBox.isSelected());
+        mConfig.setNoOverWriteConfirmDialog(notShowDialogCheckBox.isSelected());
     }
 
     void reset() {
         exeNameTextField.setText(mConfig.getExecutableName());
         runtimeOutputDirectoryTextField.setText(mConfig.getRuntimeOutputDirectory());
-        notShowDialogCheckBox.setSelected(mConfig.isNotShowOverwriteConfirmDialog());
+        notShowDialogCheckBox.setSelected(mConfig.isNoOverWriteConfirmDialog());
     }
 
     {

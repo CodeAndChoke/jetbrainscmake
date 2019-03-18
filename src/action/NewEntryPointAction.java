@@ -34,104 +34,167 @@ class NewEntryPointAction extends AnAction {
     private static final String CMAKE_FILE = "/CMakeLists.txt";
 
     private VirtualFile targetedSourceFile;
-    private ExecutableState config;
+    private ExecutableState executableState;
     private Project project;
+    private VirtualFile cmakeFile;
+    private boolean cmakeOnCurrentFolderFound = true;
 
     /**
      * User pushed the hot key and action needed to be verified
      */
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
-        project = event.getRequiredData(CommonDataKeys.PROJECT);
-
-        config = ExecutableState.getInstance(project);
-
-        targetedSourceFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
-
-
-        String nearestCmake = Objects.requireNonNull(targetedSourceFile).getParent().getPath() + CMAKE_FILE;
-        File cmakeOnCurrentFolder = new File(nearestCmake);
-        if(!cmakeOnCurrentFolder.exists()){
-            nearestCmake = project.getBasePath() + CMAKE_FILE;
-        }
-
-        File appendingCmake = new File(nearestCmake);
-        VirtualFile cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(appendingCmake);
-        if (cmakeFile == null) {
-            Notifications.Bus.notify (
-                    new Notification("new_entry_point_action", "Single File Execution Plugin", "Fail to access " + nearestCmake, NotificationType.ERROR)
-            );
+        String nearestCmake = processEvent(event);
+        if (nearestCmake == null) {
             return;
         }
-        Document cmakelistDocument = FileDocumentManager.getInstance().getDocument(cmakeFile);
 
-        String fileName = targetedSourceFile != null ? targetedSourceFile.getName() : null;  // source file name (but not include path)
-
-        String exeName = buildExecutableName(config.getExecutableName());
-        String relativeSourcePath = new File(Objects.requireNonNull(targetedSourceFile.getParent().getPath())).toURI().relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
-        if(!cmakeOnCurrentFolder.exists()){
-            relativeSourcePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
+        Document cmakeDocument = FileDocumentManager.getInstance().getDocument(cmakeFile);
+        String fileName;
+        if (targetedSourceFile == null) {
+            fileName = null;
+        } else {
+            fileName = targetedSourceFile.getName();
         }
 
-        String regex = "^add_executable\\s*?\\(\\s*?" + exeName + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
+        String executable = buildExecutableName(executableState.getExecutableName());
 
-        Pattern pattern = Pattern.compile(regex);
+        String relativeSourcePath;
 
-        Scanner scanner = new Scanner(Objects.requireNonNull(cmakelistDocument).getText());
-        int exeExistFlag = EXE_NOT_EXIST;
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            Matcher m = pattern.matcher(line);
-            if (m.find()) {
-                String existingSourceName = m.group(1);
-                if (existingSourceName.contains(relativeSourcePath)) {
-                    exeExistFlag = EXE_EXIST_SAME_SOURCE;
-                } else {
-                    exeExistFlag = EXE_EXIST_DIFFERENT_SOURCE;
-                }
-                break;
-            }
+        if (!cmakeOnCurrentFolderFound) {
+            relativeSourcePath = targetedSourceFile.getNameWithoutExtension();
+        } else {
+            relativeSourcePath = getRelativeSourcePath();
         }
-        scanner.close();
 
-        switch(exeExistFlag) {
+        int executableExists = processCMakeFile(Objects.requireNonNull(cmakeDocument).getText(), executable, relativeSourcePath);
+        finishEvent(executableExists, cmakeDocument, executable, relativeSourcePath, fileName);
+    }
+
+    /**
+     * After every is verfied, this method will execute the calculated result
+     * @param executableExists flag if the executable's name already exists
+     * @param cmakeDocument the found cmake document
+     * @param executable name of the created executable
+     * @param relativeSourcePath relative path to the chose source file
+     * @param fileName soure file's name
+     */
+    private void finishEvent(int executableExists, Document cmakeDocument, String executable, String relativeSourcePath, String fileName){
+        switch (executableExists) {
             case EXE_NOT_EXIST:
-                insertAddExecutable(cmakelistDocument, exeName, relativeSourcePath);
-                Notifications.Bus.notify (
-                        new Notification("new_entry_point_action", "New Entry Point Plugin", "add_executable added for " + fileName + ".", NotificationType.INFORMATION)
+                insertAddExecutable(cmakeDocument, executable, relativeSourcePath);
+                Notifications.Bus.notify(
+                        new Notification("new_entry_point_action",
+                                "New Entry Point Plugin",
+                                "add_executable added for " + fileName + ".",
+                                NotificationType.INFORMATION)
                 );
                 break;
             case EXE_EXIST_SAME_SOURCE:
-                Notifications.Bus.notify (
-                        new Notification("new_entry_point_action", "New Entry Point Plugin", "add_executable for this source already exists.", NotificationType.INFORMATION)
+                Notifications.Bus.notify(
+                        new Notification("new_entry_point_action",
+                                "New Entry Point Plugin",
+                                "add_executable for this source already exists.",
+                                NotificationType.INFORMATION)
                 );
                 break;
             case EXE_EXIST_DIFFERENT_SOURCE:
                 int okFlag;
-                if (config.isNotShowOverwriteConfirmDialog()) {
+                if (executableState.isNoOverWriteConfirmDialog()) {
                     okFlag = ExeOverwriteConfirmDialog.OK_FLAG_OK;
                 } else {
                     okFlag = ExeOverwriteConfirmDialog.show(project);
                 }
 
                 if (okFlag == ExeOverwriteConfirmDialog.OK_FLAG_OK) {
-                    updateAddExecutable(cmakelistDocument, exeName, relativeSourcePath);
+                    updateAddExecutable(cmakeDocument, executable, relativeSourcePath);
                     Notifications.Bus.notify(
-                            new Notification("new_entry_point_action", "New Entry Point Plugin", "add_executable overwritten", NotificationType.INFORMATION)
+                            new Notification("new_entry_point_action",
+                                    "New Entry Point Plugin",
+                                    "add_executable overwritten",
+                                    NotificationType.INFORMATION)
                     );
                 }
                 break;
             default:
                 break;
         }
+    }
 
+    /**
+     * Process the text of the input cmake file and find out if the executable name already exists
+     * @param CMakeText text of the found cmake file
+     * @param executable executable's name
+     * @param relativeSourcePath relative path to the source file
+     * @return flag if the the same executable was found
+     */
+    private int processCMakeFile(@NotNull String CMakeText, String executable, String relativeSourcePath){
+        String regex = "^add_executable\\s*?\\(\\s*?" + executable + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
+        Pattern pattern = Pattern.compile(regex);
+        Scanner scanner = new Scanner(CMakeText);
+        int executableExists = EXE_NOT_EXIST;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            Matcher m = pattern.matcher(line);
+            if (m.find()) {
+                String existingSourceName = m.group(1);
+                if (existingSourceName.contains(relativeSourcePath)) {
+                    executableExists = EXE_EXIST_SAME_SOURCE;
+                } else {
+                    executableExists = EXE_EXIST_DIFFERENT_SOURCE;
+                }
+                break;
+            }
+        }
+        scanner.close();
+        return executableExists;
+    }
+
+    /**
+     * @return the path from the project's root to the targeted source file
+     */
+    private String getRelativeSourcePath() {
+        return new File(Objects.requireNonNull(targetedSourceFile.getParent().getPath())).toURI().relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
+    }
+
+    /**
+     * Process the incoming event and return the name of the nearest cmake file
+     *
+     * @param event incoming event
+     * @return name of the nearest cmake file
+     */
+    private String processEvent(AnActionEvent event) {
+        project = event.getRequiredData(CommonDataKeys.PROJECT);
+        executableState = ExecutableState.getInstance(project);
+        targetedSourceFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
+        String nearestCmake = Objects.requireNonNull(targetedSourceFile).getParent().getPath() + CMAKE_FILE;
+
+        File cmakeOnCurrentFolder = new File(nearestCmake);
+        if (!cmakeOnCurrentFolder.exists()) {
+            nearestCmake = project.getBasePath() + CMAKE_FILE;
+            cmakeOnCurrentFolderFound = false;
+        } else {
+            cmakeOnCurrentFolderFound = true;
+        }
+
+        File appendingCmake = new File(nearestCmake);
+        cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(appendingCmake);
+        if (cmakeFile == null) {
+            Notifications.Bus.notify(new Notification(
+                    "new_entry_point_action",
+                    "Single File Execution Plugin",
+                    "Fail to access " + nearestCmake,
+                    NotificationType.ERROR));
+            return null;
+        }
+        return nearestCmake;
     }
 
     private void insertAddExecutable(final Document cmakelistDocument, final String exeName, final String relativeSourcePath) {
         ApplicationManager.getApplication().runWriteAction(() -> {
             String updatedText = cmakelistDocument.getText();
             updatedText += "\n" + constructAddExecutable(exeName, relativeSourcePath);
-            String runtimeDir = config.getRuntimeOutputDirectory();
+            String runtimeDir = executableState.getRuntimeOutputDirectory();
             if (runtimeDir != null && !runtimeDir.equals("")) {
                 String outputDir = quoteString(buildOutputDirectory());
                 updatedText += "\n" + constructSetTargetProperties(exeName, outputDir);
@@ -143,7 +206,7 @@ class NewEntryPointAction extends AnAction {
     private void updateAddExecutable(final Document cmakelistDocument,
                                      final String exeName,
                                      final String relativeSourcePath) {
-        String runtimeDir = config.getRuntimeOutputDirectory();
+        String runtimeDir = executableState.getRuntimeOutputDirectory();
         StringBuilder updatedDocument = new StringBuilder();
 
         String regex = "^add_executable\\s*?\\(\\s*?" + exeName + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
@@ -177,25 +240,34 @@ class NewEntryPointAction extends AnAction {
 
     /**
      * Create a cmake valid command to add a new executable
-     * @param fileName name of the new executable
+     *
+     * @param fileName       name of the new executable
      * @param sourceFilePath name of the file
      * @return the possible new executable
      */
     private String constructAddExecutable(String fileName, String sourceFilePath) {
-        return "add_executable("+ fileName + " " + quotingSourcePath(sourceFilePath) +")";
+        return "add_executable(" + fileName + " " + quotingSourcePath(sourceFilePath) + ")";
     }
 
     private String constructSetTargetProperties(String executableName, String outputDirectory) {
         return "set_target_properties(" + executableName + " PROPERTIES RUNTIME_OUTPUT_DIRECTORY " + outputDirectory + ")";
     }
 
-    private String buildExecutableName(String executableName) {
-        return executableName.replace(ExecutableState.EXECUTABLE_NAME_FILENAME,
+    /**
+     * Build the name of the new executable with help of the chose source file.
+     * <p>
+     * The extension of the source file will be simply removed
+     *
+     * @param sourceFile name of the source file
+     * @return the new executable's name
+     */
+    private String buildExecutableName(String sourceFile) {
+        return sourceFile.replace(ExecutableState.EXECUTABLE_NAME_FILENAME,
                 targetedSourceFile.getNameWithoutExtension());
     }
 
     private String buildOutputDirectory() {
-        String newOutPutDirectory = config.getRuntimeOutputDirectory();
+        String newOutPutDirectory = executableState.getRuntimeOutputDirectory();
         String sourceDirRelativePath = new File(Objects.requireNonNull(project.getBasePath())).toURI().relativize(
                 new File(targetedSourceFile.getPath()).getParentFile().toURI()).getPath();
 
@@ -206,6 +278,7 @@ class NewEntryPointAction extends AnAction {
 
     /**
      * Simply quote the source path of a file
+     *
      * @param path path of the source code
      * @return a quoted source path
      */

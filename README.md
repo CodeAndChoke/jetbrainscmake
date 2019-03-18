@@ -16,3 +16,7 @@ source code. If it doesn't exist, the root <code>CMakeLists.txt</code> will be t
 
 ## Usage
 Select a C/C++ source and hot key Shift + Alt + E will do the reset for you.
+
+## TODO
+if the same executable already exists, create a new executable with a random name so user doesn't 
+have to create the executable manually.

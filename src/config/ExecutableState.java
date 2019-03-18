@@ -29,7 +29,7 @@ public class ExecutableState implements PersistentStateComponent<ExecutableState
     public static final String FILE_DIR = "%FILE_DIR%";
 
     private String runtimeOutputDirectory = "";
-    private boolean notShowOverwriteConfirmDialog = false;
+    private boolean noOverWriteConfirmDialog = false;
     private String executableName = EXECUTABLE_NAME_FILENAME;
 
     /**

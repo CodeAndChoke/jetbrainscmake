@@ -10,6 +10,7 @@ import javax.swing.*;
 
 /**
  * This ProjectConfigurable class appears on Settings dialog,
+ *
  * to let user to configure this plugin's behavior.
  */
 class NewEntryPointConfigurable implements SearchableConfigurable {
