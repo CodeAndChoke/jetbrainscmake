@@ -3,16 +3,8 @@ package action;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import config.ExecutableState;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import com.intellij.openapi.editor.Document;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 class ActionProperty {
     private Project project;
     private VirtualFile targetedSourceFile;
@@ -24,4 +16,87 @@ class ActionProperty {
     private String fileName;
     private ExecutableState executableState;
     private int executableExists;
+
+    public ActionProperty() {
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(final Project project) {
+        this.project = project;
+    }
+
+    public VirtualFile getTargetedSourceFile() {
+        return targetedSourceFile;
+    }
+
+    public void setTargetedSourceFile(final VirtualFile targetedSourceFile) {
+        this.targetedSourceFile = targetedSourceFile;
+    }
+
+    public boolean isCmakeOnCurrentFolderFound() {
+        return cmakeOnCurrentFolderFound;
+    }
+
+    public void setCmakeOnCurrentFolderFound(final boolean cmakeOnCurrentFolderFound) {
+        this.cmakeOnCurrentFolderFound = cmakeOnCurrentFolderFound;
+    }
+
+    public VirtualFile getCmakeFile() {
+        return cmakeFile;
+    }
+
+    public void setCmakeFile(final VirtualFile cmakeFile) {
+        this.cmakeFile = cmakeFile;
+    }
+
+    public Document getCmakeDocument() {
+        return cmakeDocument;
+    }
+
+    public void setCmakeDocument(final Document cmakeDocument) {
+        this.cmakeDocument = cmakeDocument;
+    }
+
+    public String getExecutable() {
+        return executable;
+    }
+
+    public void setExecutable(final String executable) {
+        this.executable = executable;
+    }
+
+    public String getRelativeSourcePath() {
+        return relativeSourcePath;
+    }
+
+    public void setRelativeSourcePath(final String relativeSourcePath) {
+        this.relativeSourcePath = relativeSourcePath;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(final String fileName) {
+        this.fileName = fileName;
+    }
+
+    public ExecutableState getExecutableState() {
+        return executableState;
+    }
+
+    public void setExecutableState(final ExecutableState executableState) {
+        this.executableState = executableState;
+    }
+
+    public int getExecutableExists() {
+        return executableExists;
+    }
+
+    public void setExecutableExists(final int executableExists) {
+        this.executableExists = executableExists;
+    }
 }

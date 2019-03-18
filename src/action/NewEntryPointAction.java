@@ -213,7 +213,6 @@ class NewEntryPointAction extends AnAction {
         StringBuilder updatedDocument = new StringBuilder();
         String exeName = actionProperty.getExecutable();
         Document cmakelistDocument = actionProperty.getCmakeDocument();
-        String relativeSourcePath = actionProperty.getRelativeSourcePath();
 
         String regex = "^add_executable\\s*?\\(\\s*?" + exeName + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
         Pattern pattern = Pattern.compile(regex);

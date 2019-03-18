@@ -6,8 +6,6 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
-import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,8 +19,6 @@ import org.jetbrains.annotations.Nullable;
  * and project-level values' state between restarts of the IDE
  */
 @State(name="config.ExecutableState", storages = {@Storage("config.ExecutableState.xml")})
-@Getter
-@Setter
 public class ExecutableState implements PersistentStateComponent<ExecutableState> {
     public static final String EXECUTABLE_NAME_FILENAME = "%FILENAME%";
     public static final String PROJECT_DIR = "%PROJECT_DIR%";
@@ -51,5 +47,29 @@ public class ExecutableState implements PersistentStateComponent<ExecutableState
     @Nullable
     public static ExecutableState getInstance(Project project) {
         return ServiceManager.getService(project, ExecutableState.class);
+    }
+
+    public String getRuntimeOutputDirectory() {
+        return runtimeOutputDirectory;
+    }
+
+    public void setRuntimeOutputDirectory(final String runtimeOutputDirectory) {
+        this.runtimeOutputDirectory = runtimeOutputDirectory;
+    }
+
+    public boolean isNoOverWriteConfirmDialog() {
+        return noOverWriteConfirmDialog;
+    }
+
+    public void setNoOverWriteConfirmDialog(final boolean noOverWriteConfirmDialog) {
+        this.noOverWriteConfirmDialog = noOverWriteConfirmDialog;
+    }
+
+    public String getExecutableName() {
+        return executableName;
+    }
+
+    public void setExecutableName(final String executableName) {
+        this.executableName = executableName;
     }
 }
