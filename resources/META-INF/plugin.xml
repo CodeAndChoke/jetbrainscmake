@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>de.longnguyen.plugin.clion.new.entry.point.plugin</id>
   <name>New Executable C/C++</name>
-  <version>1.2</version>
+  <version>1.2.1</version>
   <vendor email="long.nguyen2306@protonmail.com" url="https://long-nguyen.de">Long Nguyen</vendor>
 
   <description><![CDATA[
