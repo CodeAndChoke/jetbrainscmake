@@ -14,7 +14,6 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import config.ExecutableState;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -31,6 +30,7 @@ class NewEntryPointAction extends AnAction {
     private static final int EXE_EXIST_SAME_SOURCE = 1;
     private static final int EXE_EXIST_DIFFERENT_SOURCE = 2;
     private static final String CMAKE_FILE = "/CMakeLists.txt";
+    public static final String EXECUTABLE_NAME_FILENAME = "%FILENAME%";
 
     /**
      * User pushed the hot key and action needed to be verified
@@ -156,7 +156,6 @@ class NewEntryPointAction extends AnAction {
     private ActionProperty processEvent(AnActionEvent event) {
         ActionProperty actionProperty = new ActionProperty();
         actionProperty.setProject(event.getRequiredData(CommonDataKeys.PROJECT));
-        actionProperty.setExecutableState(ExecutableState.getInstance(actionProperty.getProject()));
         actionProperty.setTargetedSourceFile(event.getData(PlatformDataKeys.VIRTUAL_FILE));
         String nearestCmake = Objects.requireNonNull(actionProperty.getTargetedSourceFile()).getParent().getPath() + CMAKE_FILE;
 
@@ -183,21 +182,14 @@ class NewEntryPointAction extends AnAction {
 
     private void insertAddExecutable(ActionProperty actionProperty) {
         Document cmakelistDocument = actionProperty.getCmakeDocument();
-        String exeName = actionProperty.getExecutable();
         ApplicationManager.getApplication().runWriteAction(() -> {
             String updatedText = cmakelistDocument.getText();
             updatedText += "\n" + constructAddExecutable(actionProperty);
-            String runtimeDir = "";
-            if (runtimeDir != null && !runtimeDir.equals("")) {
-                String outputDir = quoteString(buildOutputDirectory(actionProperty));
-                updatedText += "\n" + constructSetTargetProperties(exeName, outputDir);
-            }
             cmakelistDocument.setText(updatedText);
         });
     }
 
     private void updateAddExecutable(ActionProperty actionProperty) {
-        String runtimeDir = "";
         StringBuilder updatedDocument = new StringBuilder();
         String exeName = actionProperty.getExecutable();
         Document cmakelistDocument = actionProperty.getCmakeDocument();
@@ -219,10 +211,6 @@ class NewEntryPointAction extends AnAction {
             }
             if (m.find()) {
                 line = m.replaceFirst(constructAddExecutable(actionProperty));
-                if (runtimeDir != null && !runtimeDir.equals("")) {
-                    String outputDir = quoteString(buildOutputDirectory(actionProperty));
-                    line += "\n" + constructSetTargetProperties(exeName, outputDir);
-                }
             }
             updatedDocument.append(line).append('\n');
         }
@@ -241,10 +229,6 @@ class NewEntryPointAction extends AnAction {
                 quotingSourcePath(actionProperty.getRelativeSourcePath()) + ")";
     }
 
-    private String constructSetTargetProperties(String executableName, String outputDirectory) {
-        return "set_target_properties(" + executableName + " PROPERTIES RUNTIME_OUTPUT_DIRECTORY " + outputDirectory + ")";
-    }
-
     /**
      * Build the name of the new executable with help of the chose source file.
      * <p>
@@ -254,18 +238,8 @@ class NewEntryPointAction extends AnAction {
      * @return the new executable's name
      */
     private String buildExecutableName(ActionProperty actionProperty) {
-        return actionProperty.getTargetedSourceFile().getName().replace(ExecutableState.EXECUTABLE_NAME_FILENAME,
+        return actionProperty.getTargetedSourceFile().getName().replace(EXECUTABLE_NAME_FILENAME,
                 actionProperty.getTargetedSourceFile().getNameWithoutExtension());
-    }
-
-    private String buildOutputDirectory(ActionProperty actionProperty) {
-        String newOutPutDirectory = "";
-        String sourceDirRelativePath = new File(Objects.requireNonNull(actionProperty.getProject().getBasePath())).toURI().relativize(
-                new File(actionProperty.getTargetedSourceFile().getPath()).getParentFile().toURI()).getPath();
-
-        newOutPutDirectory = newOutPutDirectory.replace(ExecutableState.PROJECT_DIR, "${PROJECT_SOURCE_DIR}");
-        newOutPutDirectory = newOutPutDirectory.replace(ExecutableState.FILE_DIR, "${CMAKE_CURRENT_SOURCE_DIR}/" + sourceDirRelativePath);
-        return newOutPutDirectory;
     }
 
     /**
@@ -280,10 +254,6 @@ class NewEntryPointAction extends AnAction {
             quotedPath = '"' + quotedPath + '"';
         }
         return quotedPath;
-    }
-
-    private String quoteString(String str) {
-        return '"' + str + '"';
     }
 
     @Override

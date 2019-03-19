@@ -1,9 +1,8 @@
 package action;
 
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import config.ExecutableState;
-import com.intellij.openapi.editor.Document;
 
 class ActionProperty {
     private Project project;
@@ -14,7 +13,6 @@ class ActionProperty {
     private String executable;
     private String relativeSourcePath;
     private String fileName;
-    private ExecutableState executableState;
     private int executableExists;
 
     public ActionProperty() {
@@ -82,14 +80,6 @@ class ActionProperty {
 
     public void setFileName(final String fileName) {
         this.fileName = fileName;
-    }
-
-    public ExecutableState getExecutableState() {
-        return executableState;
-    }
-
-    public void setExecutableState(final ExecutableState executableState) {
-        this.executableState = executableState;
     }
 
     public int getExecutableExists() {
