@@ -187,7 +187,7 @@ class NewEntryPointAction extends AnAction {
         ApplicationManager.getApplication().runWriteAction(() -> {
             String updatedText = cmakelistDocument.getText();
             updatedText += "\n" + constructAddExecutable(actionProperty);
-            String runtimeDir = actionProperty.getExecutableState().getRuntimeOutputDirectory();
+            String runtimeDir = "";
             if (runtimeDir != null && !runtimeDir.equals("")) {
                 String outputDir = quoteString(buildOutputDirectory(actionProperty));
                 updatedText += "\n" + constructSetTargetProperties(exeName, outputDir);
@@ -197,7 +197,7 @@ class NewEntryPointAction extends AnAction {
     }
 
     private void updateAddExecutable(ActionProperty actionProperty) {
-        String runtimeDir = actionProperty.getExecutableState().getRuntimeOutputDirectory();
+        String runtimeDir = "";
         StringBuilder updatedDocument = new StringBuilder();
         String exeName = actionProperty.getExecutable();
         Document cmakelistDocument = actionProperty.getCmakeDocument();
@@ -259,7 +259,7 @@ class NewEntryPointAction extends AnAction {
     }
 
     private String buildOutputDirectory(ActionProperty actionProperty) {
-        String newOutPutDirectory = actionProperty.getExecutableState().getRuntimeOutputDirectory();
+        String newOutPutDirectory = "";
         String sourceDirRelativePath = new File(Objects.requireNonNull(actionProperty.getProject().getBasePath())).toURI().relativize(
                 new File(actionProperty.getTargetedSourceFile().getPath()).getParentFile().toURI()).getPath();
 

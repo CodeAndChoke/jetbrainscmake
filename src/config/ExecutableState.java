@@ -24,10 +24,6 @@ public class ExecutableState implements PersistentStateComponent<ExecutableState
     public static final String PROJECT_DIR = "%PROJECT_DIR%";
     public static final String FILE_DIR = "%FILE_DIR%";
 
-    private String runtimeOutputDirectory = "";
-    private boolean noOverWriteConfirmDialog = false;
-    private String executableName = EXECUTABLE_NAME_FILENAME;
-
     /**
      * Empty private constructor
      */
@@ -47,29 +43,5 @@ public class ExecutableState implements PersistentStateComponent<ExecutableState
     @Nullable
     public static ExecutableState getInstance(Project project) {
         return ServiceManager.getService(project, ExecutableState.class);
-    }
-
-    public String getRuntimeOutputDirectory() {
-        return runtimeOutputDirectory;
-    }
-
-    public void setRuntimeOutputDirectory(final String runtimeOutputDirectory) {
-        this.runtimeOutputDirectory = runtimeOutputDirectory;
-    }
-
-    public boolean isNoOverWriteConfirmDialog() {
-        return noOverWriteConfirmDialog;
-    }
-
-    public void setNoOverWriteConfirmDialog(final boolean noOverWriteConfirmDialog) {
-        this.noOverWriteConfirmDialog = noOverWriteConfirmDialog;
-    }
-
-    public String getExecutableName() {
-        return executableName;
-    }
-
-    public void setExecutableName(final String executableName) {
-        this.executableName = executableName;
     }
 }

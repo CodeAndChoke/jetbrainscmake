@@ -24,7 +24,7 @@
   <depends>com.intellij.modules.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <projectConfigurable groupId="tools" displayName="New Executable" id="preferences.gui.NewEntryPointConfigurable" instance="gui.NewEntryPointConfigurable" />
+    <projectConfigurable groupId="tools" displayName="New Executable" id="preferences.gui.NewEntryPointConfigurable"/>
     <projectService serviceInterface="config.ExecutableState" serviceImplementation="config.ExecutableState"/>
   </extensions>
 
