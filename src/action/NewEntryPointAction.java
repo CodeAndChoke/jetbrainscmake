@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import config.ExecutableState;
-import gui.ExeOverwriteConfirmDialog;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -72,17 +71,15 @@ class NewEntryPointAction extends AnAction {
         processCMakeFile(actionProperty);
 
 
-
         finishEvent(actionProperty);
     }
 
     /**
      * After every is verfied, this method will execute the calculated result
      */
-    private void finishEvent(ActionProperty actionProperty){
+    private void finishEvent(ActionProperty actionProperty) {
         int executableExists = actionProperty.getExecutableExists();
         String fileName = actionProperty.getFileName();
-        ExecutableState executableState = actionProperty.getExecutableState();
         switch (executableExists) {
             case EXE_NOT_EXIST:
                 insertAddExecutable(actionProperty);
@@ -102,22 +99,13 @@ class NewEntryPointAction extends AnAction {
                 );
                 break;
             case EXE_EXIST_DIFFERENT_SOURCE:
-                int okFlag;
-                if (executableState.isNoOverWriteConfirmDialog()) {
-                    okFlag = ExeOverwriteConfirmDialog.OK_FLAG_OK;
-                } else {
-                    okFlag = ExeOverwriteConfirmDialog.show(actionProperty.getProject());
-                }
-
-                if (okFlag == ExeOverwriteConfirmDialog.OK_FLAG_OK) {
-                    updateAddExecutable(actionProperty);
-                    Notifications.Bus.notify(
-                            new Notification("new_executable_action",
-                                    "New Entry Point Plugin",
-                                    "add_executable overwritten",
-                                    NotificationType.INFORMATION)
-                    );
-                }
+                updateAddExecutable(actionProperty);
+                Notifications.Bus.notify(
+                        new Notification("new_executable_action",
+                                "New Entry Point Plugin",
+                                "add_executable overwritten",
+                                NotificationType.INFORMATION)
+                );
                 break;
             default:
                 break;
@@ -127,7 +115,7 @@ class NewEntryPointAction extends AnAction {
     /**
      * Process the text of the input cmake file and find out if the executable name already exists
      */
-    private void processCMakeFile(ActionProperty actionProperty){
+    private void processCMakeFile(ActionProperty actionProperty) {
         String executable = actionProperty.getExecutable();
         String regex = "^add_executable\\s*?\\(\\s*?" + executable + "\\s+(((\\S+)\\s+)*\\S+)\\s*\\)";
         Pattern pattern = Pattern.compile(regex);
@@ -261,7 +249,8 @@ class NewEntryPointAction extends AnAction {
      * Build the name of the new executable with help of the chose source file.
      * <p>
      * The extension of the source file will be simply removed
-     *#
+     * #
+     *
      * @return the new executable's name
      */
     private String buildExecutableName(ActionProperty actionProperty) {
