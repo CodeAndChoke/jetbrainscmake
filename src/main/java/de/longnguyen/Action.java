@@ -72,7 +72,7 @@ public class Action extends AnAction {
             nearestCmake = project.getBasePath() + CMAKE_FILE;
             cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(new File(nearestCmake));
             if (cmakeFile == null) {
-                throw new IllegalArgumentException("Can not find nearest Cmakelists.txt");
+                throw new IllegalArgumentException();
             }
         }
         return cmakeFile;

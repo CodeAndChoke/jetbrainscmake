@@ -5,9 +5,11 @@
     <vendor email="long.nguyen2306@protonmail.com" url="https://long-nguyen.de">Long Nguyen</vendor>
 
     <description><![CDATA[
+      <code>Shift + Alt + E</code> on a source file to create an executable with the corresponding file.<br><br>
+
       If you are from the Java world, you might be used to be able to create a new single
       <code>public static void main(String [] args)</code> in every class in order test some thing
-      really quick.
+      really quick.<br><br>
 
       With CMake things are more complicated since all files needed to be linked together in an
       <code>executable</code> and duplicated method names will not be tolerated.<br><br>
@@ -25,14 +27,11 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable groupId="tools" displayName="New Executable" id="preferences.gui.NewEntryPointConfigurable"/>
-        <projectService serviceInterface="config.ExecutableState" serviceImplementation="config.ExecutableState"/>
     </extensions>
 
     <actions>
         <action id="new_executable_action" class="de.longnguyen.Action" text="Add Executable for Single C/Cpp File"
                 description="Adding a new add_executable() to CMakeLists.txt">
-            <add-to-group group-id="CodeMenu" anchor="last"/>
-            <add-to-group group-id="EditorPopupMenu"/>
             <keyboard-shortcut keymap="$default" first-keystroke="shift alt E"/>
         </action>
     </actions>
