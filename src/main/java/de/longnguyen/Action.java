@@ -29,37 +29,53 @@ public class Action extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         VirtualFile targetedSourceFile = (event.getData(PlatformDataKeys.VIRTUAL_FILE));
+        Project project = event.getProject();
+        if (targetedSourceFile != null && project != null ) {
+            try {
+                VirtualFile cmakeFile = getCmakeFile(targetedSourceFile, project);
+                Document cmakeDocument = FileDocumentManager.getInstance().getDocument(cmakeFile);
+
+                if (cmakeDocument != null) {
+                    String relativeSourcePath =
+                            new File(Objects.requireNonNull(project.getBasePath()))
+                                    .toURI()
+                                    .relativize(new File(targetedSourceFile.getPath())
+                                                    .toURI()
+                                    ).getPath();
+
+                    ApplicationManager.getApplication().runWriteAction(() -> {
+                        String updatedText = cmakeDocument.getText() +
+                                "\nadd_executable(" + relativeSourcePath + " " + relativeSourcePath + ")";
+                        cmakeDocument.setText(updatedText);
+                    });
+                    Notifications.Bus.notify(
+                            new Notification("new_executable_action",
+                                    "New Entry Point Plugin",
+                                    "add_executable added for " + relativeSourcePath + ".",
+                                    NotificationType.INFORMATION)
+                    );
+                }
+            } catch (Exception e) {
+                Notifications.Bus.notify(new Notification(
+                        "new_executable_action",
+                        "New Executable Plugin",
+                        "An error happened. Fail to access the nearest CMakelists.txt",
+                        NotificationType.ERROR));
+            }
+        }
+    }
+
+    private VirtualFile getCmakeFile(VirtualFile targetedSourceFile, Project project) {
         String nearestCmake = Objects.requireNonNull(targetedSourceFile).getParent().getPath() + CMAKE_FILE;
-
-        final VirtualFile cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(new File(nearestCmake));
-
+        VirtualFile cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(new File(nearestCmake));
         if (cmakeFile == null) {
-            Notifications.Bus.notify(new Notification(
-                    "new_executable_action",
-                    "New Executable Plugin",
-                    "An error happened. Fail to access the nearest CMakelists.txt",
-                    NotificationType.ERROR));
-            return;
+            nearestCmake = project.getBasePath() + CMAKE_FILE;
+            cmakeFile = LocalFileSystem.getInstance().findFileByIoFile(new File(nearestCmake));
+            if (cmakeFile == null) {
+                throw new IllegalArgumentException("Can not find nearest Cmakelists.txt");
+            }
         }
-
-        Document cmakeDocument = FileDocumentManager.getInstance().getDocument(cmakeFile);
-
-        if (cmakeDocument != null) {
-            String relativeSourcePath = new File(Objects.requireNonNull(targetedSourceFile.getParent().getPath())).toURI()
-                    .relativize(new File(targetedSourceFile.getPath()).toURI()).getPath();
-
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                String updatedText = cmakeDocument.getText();
-                updatedText += "\n" + "add_executable(" + relativeSourcePath + " " + relativeSourcePath + ")";
-                cmakeDocument.setText(updatedText);
-            });
-            Notifications.Bus.notify(
-                    new Notification("new_executable_action",
-                            "New Entry Point Plugin",
-                            "add_executable added for " + relativeSourcePath + ".",
-                            NotificationType.INFORMATION)
-            );
-        }
+        return cmakeFile;
     }
 
     @Override
