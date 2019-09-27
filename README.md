@@ -2,24 +2,16 @@
 [CLion](https://www.jetbrains.com/clion/) plugin to execute single file .c/.cpp file quickly.
 
 ## Description
-If you are from Java world, you might be used to simply creating a new single <code>public static void main</code>
-in order to create a new entry point for testing purpose.
+<code>Shift + Alt + E</code> on a source file to create an executable with the corresponding file.
 
-With CMake things are more complicating since all files needed to be linked together and duplicated method names
-will not be tolerated, therefore<code>CMakeLists.txt</code> needs to be configured
-to declare <code>add_executable(Example example.c)</code> to run a new entry point.
-It is troublesome when you want to run many of the files independently within the same project.<br>
+If you are from the Java world, you might be used to be able to create a new single
+<code>public static void main(String [] args)</code> in every class in order test some thing
+really quick.
 
-This plugin supports to insert <code>add_executable()</code> statement into <code>CMakeLists.txt</code>.
-It will try to find the nearest <code>CMakeLists.txt</code> on the same folder level with the targeted
-source code. If it doesn't exist, the root <code>CMakeLists.txt</code> will be token.
+With CMake things are more complicated since all files needed to be linked together in an
+<code>executable</code> and duplicated method names will not be tolerated.
 
-## Usage
-Select a C/C++ source and hot key Shift + Alt + E will do the reset for you.
+This plugin will automatically insert a new <code>executable</code> for a single source file in the nearest CMake file.
 
-## TODO
-if the same executable already exists, create a new executable with a random name so user doesn't 
-have to create the executable manually.
-
-## How to read this project:
-Begin with the class <code>NewEntryPointAction</code>
+Simply choose a C/C++ source file you want to execute separately from your main project and press the hot key
+<code>Shift + Alt + E</code>
