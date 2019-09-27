@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>de.longnguyen.plugin.clion.new.entry.point.plugin</id>
     <name>New Executable C/C++</name>
-    <version>1.2.1</version>
+    <version>1.3</version>
     <vendor email="long.nguyen2306@protonmail.com" url="https://long-nguyen.de">Long Nguyen</vendor>
 
     <description><![CDATA[
@@ -20,7 +20,7 @@
       <a href="https://github.com/longnguyen2306/CLion-Single-Executable">github page</a></li>
     ]]></description>
 
-    <idea-version since-build="141.0"/>
+    <idea-version since-build="183.0"/>
     <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -29,7 +29,7 @@
     </extensions>
 
     <actions>
-        <action id="new_executable_action" class="de.longnguyen.Action" text="Add executable for single c/cpp file"
+        <action id="new_executable_action" class="de.longnguyen.Action" text="Add Executable for Single C/Cpp File"
                 description="Adding a new add_executable() to CMakeLists.txt">
             <add-to-group group-id="CodeMenu" anchor="last"/>
             <add-to-group group-id="EditorPopupMenu"/>

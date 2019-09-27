@@ -1,0 +1,34 @@
+<idea-plugin>
+  <id>de.longnguyen.plugin.clion.new.entry.point.plugin</id>
+  <name>New Executable C/C++</name>
+  <version>1.3</version>
+  <vendor email="long.nguyen2306@protonmail.com" url="https://long-nguyen.de">Long Nguyen</vendor>
+  <description>
+      If you are from the Java world, you might be used to be able to create a new single
+      &lt;code&gt;public static void main(String [] args)&lt;/code&gt; in every class in order test some thing
+      really quick.
+
+      With CMake things are more complicated since all files needed to be linked together in an
+      &lt;code&gt;executable&lt;/code&gt; and duplicated method names will not be tolerated.&lt;br&gt;&lt;br&gt;
+
+      This plugin will automatically insert a new &lt;code&gt;executable&lt;/code&gt; for a single source file in the nearest CMake file.&lt;br&gt;&lt;br&gt;
+
+      Simply choose a C/C++ source file you want to execute separately from your main project and press the hot key
+      &lt;code&gt;Shift + Alt + E&lt;/code&gt;
+
+      &lt;a href="https://github.com/longnguyen2306/CLion-Single-Executable"&gt;github page&lt;/a&gt;&lt;/li&gt;
+    </description>
+  <idea-version since-build="183.0"/>
+  <depends>com.intellij.modules.lang</depends>
+  <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable groupId="tools" displayName="New Executable" id="preferences.gui.NewEntryPointConfigurable"/>
+    <projectService serviceInterface="config.ExecutableState" serviceImplementation="config.ExecutableState"/>
+  </extensions>
+  <actions>
+    <action id="new_executable_action" class="de.longnguyen.Action" text="Add Executable for Single C/Cpp File" description="Adding a new add_executable() to CMakeLists.txt">
+      <add-to-group group-id="CodeMenu" anchor="last"/>
+      <add-to-group group-id="EditorPopupMenu"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="shift alt E"/>
+    </action>
+  </actions>
+</idea-plugin>

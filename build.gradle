@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'de.longnguyen'
-version '1.0-SNAPSHOT'
+version '1.3'
 
 sourceCompatibility = 1.8
 
@@ -18,10 +18,11 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2019.2.2'
+    version = "2018.3"
+    pluginName = rootProject.name
+    updateSinceUntilBuild = false
 }
+
 patchPluginXml {
-    changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+    changeNotes ""
 }
