@@ -1,4 +1,4 @@
-package action;
+package de.longnguyen;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -22,10 +22,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Execute the actionPerformed when user intends to use the plugin
- */
-class NewEntryPointAction extends AnAction {
+
+public class Action extends AnAction {
     private static final int EXE_NOT_EXIST = 0;
     private static final int EXE_EXIST_SAME_SOURCE = 1;
     private static final int EXE_EXIST_DIFFERENT_SOURCE = 2;
@@ -45,32 +43,30 @@ class NewEntryPointAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         // First step: Process the action event and find out if the project has any CMake file
-        if (!processEvent(event)) {
-            return;
+        if (processEvent(event)) {
+            // Second step: Extract the file name of the targeted source file
+            if (targetedSourceFile == null) {
+                fileName = null;
+            } else {
+                fileName = targetedSourceFile.getName();
+            }
+
+            // Third step: Build the name of the new executable
+            executable = buildExecutableName();
+
+            // Fourth step: Get the relative source path of the found cmake file
+            if (!cmakeOnCurrentFolderFound) {
+                relativeSourcePath = targetedSourceFile.getNameWithoutExtension();
+            } else {
+                relativeSourcePath = getRelativeSourcePath();
+            }
+
+
+            // Fifth step: Process the content of the cmake file
+            processCMakeFile();
+
+            finishEvent();
         }
-
-        // Second step: Extract the file name of the targeted source file
-        if (targetedSourceFile == null) {
-            fileName = null;
-        } else {
-            fileName = targetedSourceFile.getName();
-        }
-
-        // Third step: Build the name of the new executable
-        executable = buildExecutableName();
-
-        // Fourth step: Get the relative source path of the found cmake file
-        if (!cmakeOnCurrentFolderFound) {
-            relativeSourcePath = targetedSourceFile.getNameWithoutExtension();
-        } else {
-            relativeSourcePath = getRelativeSourcePath();
-        }
-
-
-        // Fifth step: Process the content of the cmake file
-        processCMakeFile();
-
-        finishEvent();
     }
 
     /**

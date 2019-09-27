@@ -56,3 +56,4 @@ fabric.properties
 hs_err_pid*
 target
 *.iml
+!gradle/wrapper/*.jar
