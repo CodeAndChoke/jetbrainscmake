@@ -30,8 +30,7 @@
     </extensions>
 
     <actions>
-        <action id="new_executable_action" class="de.longnguyen.Action" text="Add Executable for Single C/Cpp File"
-                description="Adding a new add_executable() to CMakeLists.txt">
+        <action id="new_executable_action" class="de.longnguyen.Action">
             <keyboard-shortcut keymap="$default" first-keystroke="shift alt E"/>
         </action>
     </actions>

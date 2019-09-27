@@ -14,6 +14,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -29,31 +30,21 @@ public class Action extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         VirtualFile targetedSourceFile = (event.getData(PlatformDataKeys.VIRTUAL_FILE));
+
         Project project = event.getProject();
-        if (targetedSourceFile != null && project != null ) {
+        if (targetedSourceFile != null && project != null) {
             try {
                 VirtualFile cmakeFile = getCmakeFile(targetedSourceFile, project);
                 Document cmakeDocument = FileDocumentManager.getInstance().getDocument(cmakeFile);
-
                 if (cmakeDocument != null) {
-                    String relativeSourcePath =
+                    String sourceFilePath =
                             new File(Objects.requireNonNull(project.getBasePath()))
                                     .toURI()
                                     .relativize(new File(targetedSourceFile.getPath())
-                                                    .toURI()
+                                            .toURI()
                                     ).getPath();
 
-                    ApplicationManager.getApplication().runWriteAction(() -> {
-                        String updatedText = cmakeDocument.getText() +
-                                "\nadd_executable(" + relativeSourcePath + " " + relativeSourcePath + ")";
-                        cmakeDocument.setText(updatedText);
-                    });
-                    Notifications.Bus.notify(
-                            new Notification("new_executable_action",
-                                    "New Entry Point Plugin",
-                                    "add_executable added for " + relativeSourcePath + ".",
-                                    NotificationType.INFORMATION)
-                    );
+                    processCmakeFile(cmakeDocument, sourceFilePath);
                 }
             } catch (Exception e) {
                 Notifications.Bus.notify(new Notification(
@@ -76,6 +67,35 @@ public class Action extends AnAction {
             }
         }
         return cmakeFile;
+    }
+
+    private void processCmakeFile(Document cmakeDocument, String sourceFilePath){
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            String currentText = cmakeDocument.getText();
+
+            String executable = FilenameUtils.removeExtension(sourceFilePath)
+                    .replace("/", "_")
+                    .replace("\\", "_");
+
+            String newLine = "add_executable(" + executable + " " + sourceFilePath + ")";
+
+            if (!currentText.contains(newLine)) {
+                cmakeDocument.setText(currentText + "\n" + newLine);
+                Notifications.Bus.notify(
+                        new Notification("new_executable_action",
+                                "New Entry Point Plugin",
+                                "add_executable added for " + sourceFilePath + ".",
+                                NotificationType.INFORMATION)
+                );
+            } else {
+                Notifications.Bus.notify(
+                        new Notification("new_executable_action",
+                                "New Entry Point Plugin",
+                                "Executable already existed.",
+                                NotificationType.INFORMATION)
+                );
+            }
+        });
     }
 
     @Override
